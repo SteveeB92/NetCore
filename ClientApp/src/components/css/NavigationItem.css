@@ -1,0 +1,13 @@
+/* Nav links */
+.blogNavItem {
+  position: relative;
+  display: inline-block;
+  padding: 10px;
+  font-weight: 500;
+  color: #cdddeb;
+}
+.blogNavItem:hover,
+.blogNavItem:focus {
+  color: #fff;
+  text-decoration: none;
+}
