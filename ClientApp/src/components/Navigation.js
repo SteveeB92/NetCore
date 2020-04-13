@@ -1,28 +1,43 @@
 import React from 'react';
 import NavigationItem from './NavigationItem';
+import LocationSetting from '../LocationSetting';
 import './css/Navigation.css';
 
 export default class Navigation extends React.Component {
     constructor(props){  
         super(props);  
-        this.addActive = this.addActive.bind(this);
-        this.state = {previousClick: "Home"};
+        this.setNavItemActive = this.setNavItemActive.bind(this);
+        this.state = {
+            navItems: [
+                        {key: 1, name: "Home", to: "/", isActive: true},
+                        {key: 2, name: "New Features", to: "/NewFeatures", isActive: false},
+                        {key: 3, name: "Press", to: "/", isActive: false},
+                        {key: 4, name: "New Hires", to: "/", isActive: false},
+                        {key: 5, name: "About", to: "/", isActive: false}
+                      ]
+        };
     }
 
-    addActive(name){
-        this.setState({previousClick: name});
+    componentDidMount() {
+        this.setNavItemActive();
+    }
+
+    setNavItemActive(){
+        let navItems = this.state.navItems;
+        let location = LocationSetting;
+        navItems.forEach(navItem => navItem.isActive = navItem.to === location.pathname);
+        this.setState({navItems: navItems});
     }
 
     render() {
-
-        return (
-            <nav className="blogNav">
-                <NavigationItem name="Home" to="/" previousClick={this.state.previousClick} addActive={this.addActive}/>
-                <NavigationItem name="New Features" to="/NewFeatures" previousClick={this.state.previousClick} addActive={this.addActive}/>
-                <NavigationItem name="Press" to="/" previousClick={this.state.previousClick} addActive={this.addActive}/>
-                <NavigationItem name="New Hires" to="/" previousClick={this.state.previousClick} addActive={this.addActive}/>
-                <NavigationItem name="About" to="/" previousClick={this.state.previousClick} addActive={this.addActive}/>
-            </nav>
-        );
+        return this.display();
+    }
+    
+    display() {
+        return <nav className="blogNav">
+            {this.state.navItems.map(navItem =>
+                <NavigationItem key={navItem.key} name={navItem.name} to={navItem.to} isActive={navItem.isActive} setNavItemActive={this.setNavItemActive}/>
+            )}
+        </nav>
     }
 }

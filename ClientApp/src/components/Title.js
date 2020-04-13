@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from "prop-types";
 import'./css/Title.css';
 
 export default class Title extends React.Component {
@@ -13,3 +14,7 @@ export default class Title extends React.Component {
         );
     }
 }
+
+Title.propTypes = {
+    name: PropTypes.string.isRequired
+};

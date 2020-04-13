@@ -9,5 +9,5 @@ export default class MainBodyContainer extends React.Component{
                 <Header title="Title" subTitle="Sub Title" />  
             </div>
         );
-    };
+    }
 }
