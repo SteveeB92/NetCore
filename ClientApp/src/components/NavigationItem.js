@@ -1,6 +1,7 @@
-import React, { Component } from 'react';
+import React from 'react';
 import './css/NavigationItem.css';
 import { Link } from 'react-router-dom';
+import PropTypes from "prop-types";
 
 export default class NavigationItem extends React.Component {
     constructor(props){
@@ -11,14 +12,17 @@ export default class NavigationItem extends React.Component {
         };
     }
 
-    isActive(){
-        return this.props.name === this.props.previousClick;
-    }
-
     render() {
-        var className = this.isActive() ? "blogNavItem active" : "blogNavItem";
+        var className = this.props.isActive ? "blogNavItem active" : "blogNavItem";
         return (
-            <Link className={className} to={this.state.to} onClick={() => this.props.addActive(this.state.name)}>{this.state.name}</Link>
+            <Link className={className} to={this.state.to} onClick={() => this.props.setNavItemActive(this.state.name)}>{this.state.name}</Link>
         );
     }
 }
+
+NavigationItem.propTypes = {
+    name: PropTypes.string.isRequired,
+    to: PropTypes.string.isRequired,
+    isActive: PropTypes.bool.isRequired,
+    setNavItemActive: PropTypes.func.isRequired
+};

@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from "prop-types";
 import './css/SubTitle.css';
 import './css/Lead.css';
 
@@ -13,3 +14,6 @@ export default class SubTitle extends React.Component{
         );
     }
 }
+SubTitle.propTypes = {
+    name: PropTypes.string.isRequired
+};

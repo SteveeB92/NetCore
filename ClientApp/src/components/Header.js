@@ -1,5 +1,6 @@
 import React from 'react';
 import './css/Header.css';
+import PropTypes from "prop-types";
 import TitleComp from './Title';
 import SubTitle from './SubTitle';
 
@@ -17,5 +18,9 @@ export default class Header extends React.Component{
                 <SubTitle name={this.state.subTitle}/>
             </div>
         );
-    };
+    }
 }
+Header.propTypes = {
+    title: PropTypes.string.isRequired,
+    subTitle: PropTypes.string.isRequired
+};
