@@ -86,12 +86,12 @@ namespace NetCore
         /// Creates a Cosmos DB database and a container with the specified partition key. 
         /// </summary>
         /// <returns></returns>
-        private static async Task<CosmosDbService> InitializeCosmosClientInstanceAsync(IConfigurationSection configurationSection)
+        private static async Task<CosmosDbService> InitializeCosmosClientInstanceAsync(IConfiguration configuration)
         {
-            string databaseName = configurationSection.GetSection("DatabaseName").Value;
-            string containerName = configurationSection.GetSection("ContainerName").Value;
-            string account = configurationSection.GetSection("Account").Value;
-            string key = configurationSection.GetSection("Key").Value;
+            string databaseName = configuration["AZURE_COSMOS_DATABASE_ID"];//configurationSection.GetSection("DatabaseName").Value;
+            string containerName = configuration["ContainerName"];//configurationSection.GetSection("ContainerName").Value;
+            string account = configuration["AZURE_COSMOS_ENDPOINT"];//configurationSection.GetSection("Account").Value;
+            string key = configuration["AZURE_COSMOS_MASTER_KEY"];//configurationSection.GetSection("Key").Value;
             CosmosClientBuilder clientBuilder = new CosmosClientBuilder(account, key);
             CosmosClient client = clientBuilder.WithConnectionModeDirect().Build();
             CosmosDbService cosmosDbService = new CosmosDbService(client, databaseName, containerName);
