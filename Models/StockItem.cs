@@ -20,7 +20,10 @@ namespace NetCore
         [JsonProperty(PropertyName="purchasedDT")]
         public DateTime PurchasedDT { get; set; }
         
+        [JsonProperty(PropertyName="purchasedDTPretty")]
+        public string PurchasedDTPretty => PurchasedDT.ToShortDateString();
+
         [JsonProperty(PropertyName="purchasedDTFormatted")]
-        public string PurchasedDTFormatted => PurchasedDT.ToString();
+        public string PurchasedDTFormatted => PurchasedDT.ToString("yyyy-MM-dd");
     }
 }
