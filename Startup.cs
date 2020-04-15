@@ -3,7 +3,6 @@ namespace NetCore
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.HttpsPolicy;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
     using Microsoft.Extensions.Configuration;
@@ -41,7 +40,8 @@ namespace NetCore
             });
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
-            services.AddSingleton<ICosmosDbService>(InitializeCosmosClientInstanceAsync(Configuration.GetSection("CosmosDb")).GetAwaiter().GetResult());
+            services.AddSingleton<ICosmosDbService>(InitializeCosmosClientInstanceAsync(Configuration).GetAwaiter().GetResult());
+            services.AddControllers().AddNewtonsoftJson();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -88,10 +88,10 @@ namespace NetCore
         /// <returns></returns>
         private static async Task<CosmosDbService> InitializeCosmosClientInstanceAsync(IConfiguration configuration)
         {
-            string databaseName = configuration["AZURE_COSMOS_DATABASE_ID"];//configurationSection.GetSection("DatabaseName").Value;
-            string containerName = configuration["ContainerName"];//configurationSection.GetSection("ContainerName").Value;
-            string account = configuration["AZURE_COSMOS_ENDPOINT"];//configurationSection.GetSection("Account").Value;
-            string key = configuration["AZURE_COSMOS_MASTER_KEY"];//configurationSection.GetSection("Key").Value;
+            string databaseName = configuration["AZURE_COSMOS_DATABASE_ID"];
+            string account = configuration["AZURE_COSMOS_ENDPOINT"];
+            string key = configuration["AZURE_COSMOS_MASTER_KEY"];
+            string containerName = "StockItem";
             CosmosClientBuilder clientBuilder = new CosmosClientBuilder(account, key);
             CosmosClient client = clientBuilder.WithConnectionModeDirect().Build();
             CosmosDbService cosmosDbService = new CosmosDbService(client, databaseName, containerName);

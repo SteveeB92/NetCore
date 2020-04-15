@@ -42,17 +42,15 @@ namespace NetCore
             return Get();
         }
 
-        [HttpPost]
-        [ActionName("Edit")]
-        public async Task<ActionResult> EditAsync([FromBody] StockItem item)
+        [HttpPost("Edit")]
+        public IEnumerable<StockItem> EditAsync([FromBody] StockItem item)
         {
             if (ModelState.IsValid)
             {
-                await _cosmosDbService.UpdateItemAsync(item.Id, item);
-                return RedirectToAction("Index");
+                _cosmosDbService.UpdateItemAsync(item.Id, item).GetAwaiter().GetResult();
             }
 
-            return View(item);
+            return Get();
         }
 
         [ActionName("Edit")]
