@@ -10,10 +10,7 @@ export default class Navigation extends React.Component {
         this.state = {
             navItems: [
                         {key: 1, name: "Home", to: "/", isActive: true},
-                        {key: 2, name: "New Features", to: "/NewFeatures", isActive: false},
-                        {key: 3, name: "Press", to: "/", isActive: false},
-                        {key: 4, name: "New Hires", to: "/", isActive: false},
-                        {key: 5, name: "About", to: "/", isActive: false}
+                        {key: 2, name: "Stock", to: "/Stock", isActive: false}
                       ]
         };
     }

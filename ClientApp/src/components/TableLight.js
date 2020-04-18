@@ -6,15 +6,18 @@ import TableLightBody from './TableLightBody';
 
 export default class TableLight extends React.Component {
     render() {
-        return  <table className="table table-striped table-responsive">
+        return  <div className="container">
                     <TableLightHeader columnDetails={this.props.columnDetails} />
-                    <TableLightBody columnDetails={this.props.columnDetails} stockItems={this.props.stockItems} isLoading={this.props.isLoading} />
-                </table>;
+                    <TableLightBody columnDetails={this.props.columnDetails} stockItems={this.props.stockItems} isLoading={this.props.isLoading}
+                                    mobileShowDeleteButtonRowID={this.props.mobileShowDeleteButtonRowID} showMobileDeleteButton={this.props.showMobileDeleteButton} />
+                </div>;
     }
 }
 
 TableLight.propTypes = {
     columnDetails: PropTypes.array.isRequired,
     stockItems: PropTypes.array.isRequired,
-    isLoading: PropTypes.bool.isRequired
+    isLoading: PropTypes.bool.isRequired,
+    mobileShowDeleteButtonRowID: PropTypes.string,
+    showMobileDeleteButton: PropTypes.func
 };
