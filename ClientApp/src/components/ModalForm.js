@@ -11,6 +11,8 @@ export default class ModalForm extends React.Component {
                 return "number";
             case "date":
                 return "date";
+            case "file":
+                return "file";
             default:
                 return "text";
         }
@@ -21,7 +23,13 @@ export default class ModalForm extends React.Component {
             return stockItem[columnDetail.fieldNameFormatted ? columnDetail.fieldNameFormatted : columnDetail.fieldName];
         }
         else{
-            return "";
+            switch(columnDetail.dataType){
+                case "date":
+                    // Return the current date in the format of yyyy-MM-dd otherwise the control doesn't default correctly
+                    return (new Date()).toISOString().split('T')[0];
+                default:
+                    return "";
+            }
         }
     }
 
@@ -35,7 +43,7 @@ export default class ModalForm extends React.Component {
                         </Modal.Header>
                         <Modal.Body>
                             <form>
-                                {this.props.columnDetails.filter(column => column.isDBField).map(columnDetail => 
+                                {this.props.columnDetails.map(columnDetail => 
                                     <div key={"Input" + columnDetail.key} className="form-group">
                                         <label htmlFor={columnDetail.key}>{columnDetail.caption}</label>
                                         <input type={this.getInputType(columnDetail.dataType)} className="form-control" id={"Input" + columnDetail.key} 

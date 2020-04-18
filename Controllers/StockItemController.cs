@@ -12,6 +12,8 @@ namespace NetCore
     public class StockItemController : Controller
     {
         private readonly ICosmosDbService _cosmosDbService;
+        private static List<StockItem> _stockItems = null;
+
         public StockItemController(ICosmosDbService cosmosDbService)
         {
             _cosmosDbService = cosmosDbService;
@@ -20,24 +22,26 @@ namespace NetCore
         [HttpGet("Index")]
         public IEnumerable<StockItem> Get()
         {
-            Thread.Sleep(1000);
-            IEnumerable<StockItem> items = _cosmosDbService.GetItemsAsync("SELECT * FROM c").GetAwaiter().GetResult();
+            // If we have not previously looked these up, look them up now
+            if (_stockItems == null)
+            {
+                Thread.Sleep(2000);
+            
+                IEnumerable<StockItem> items = _cosmosDbService.GetItemsAsync("SELECT * FROM c").GetAwaiter().GetResult();
 
-            if(!items.Any())
-                yield break;
+                _stockItems = items.ToList();
+            }
 
-            foreach(StockItem item in items)
-                yield return item;
+            return _stockItems;
         }
 
         [HttpPost("Create")]
         public IEnumerable<StockItem> CreateAsync([FromBody] StockItem item)
         {
-            if (ModelState.IsValid)
-            {
-                item.Id = Guid.NewGuid().ToString();
-                _cosmosDbService.AddItemAsync(item).GetAwaiter().GetResult();
-            }
+            item.Id = Guid.NewGuid().ToString();
+            _cosmosDbService.AddItemAsync(item).GetAwaiter().GetResult();
+
+            _stockItems.Add(item);
 
             return Get();
         }
@@ -45,52 +49,19 @@ namespace NetCore
         [HttpPost("Edit")]
         public IEnumerable<StockItem> EditAsync([FromBody] StockItem item)
         {
-            if (ModelState.IsValid)
-            {
-                _cosmosDbService.UpdateItemAsync(item.Id, item).GetAwaiter().GetResult();
-            }
+            _cosmosDbService.UpdateItemAsync(item.Id, item).GetAwaiter().GetResult();
+
+            _stockItems.Remove(_stockItems.First(existingItem => existingItem.Id == item.Id));
+            _stockItems.Add(item);
 
             return Get();
-        }
-
-        [ActionName("Edit")]
-        public async Task<ActionResult> EditAsync(string id)
-        {
-            if (id == null)
-            {
-                return BadRequest();
-            }
-
-            StockItem item = await _cosmosDbService.GetItemAsync(id);
-            if (item == null)
-            {
-                return NotFound();
-            }
-
-            return View(item);
-        }
-
-        [ActionName("Delete")]
-        public async Task<ActionResult> DeleteAsync(string id)
-        {
-            if (id == null)
-            {
-                return BadRequest();
-            }
-
-            StockItem item = await _cosmosDbService.GetItemAsync(id);
-            if (item == null)
-            {
-                return NotFound();
-            }
-
-            return View(item);
         }
 
         [HttpPost("Delete")]
         public IEnumerable<StockItem> DeleteConfirmedAsync([FromBody] string id)
         {
             _cosmosDbService.DeleteItemAsync(id).GetAwaiter().GetResult();
+            _stockItems.Remove(_stockItems.First(existingItem => existingItem.Id == id));
             return Get();
         }
 

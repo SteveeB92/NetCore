@@ -2,7 +2,7 @@ import React from 'react';
 import { Route } from 'react-router';
 import Masthead from './components/Masthead';
 import Home from './components/Home';
-import NewFeatures from './components/NewFeatures';
+import StockList from './components/StockList';
 
 export default class App extends React.Component {
     render() {
@@ -10,7 +10,7 @@ export default class App extends React.Component {
             <div>
                 <Masthead />
                 <Route exact path='/' component={Home} />
-                <Route path='/NewFeatures' component={NewFeatures} />
+                <Route path='/Stock' component={StockList} />
             </div>
         );
     }
