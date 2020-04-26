@@ -20,7 +20,8 @@ export default class ModalForm extends React.Component {
 
     getDefaultValue(stockItem, columnDetail){
         if (stockItem){
-            return stockItem[columnDetail.fieldNameFormatted ? columnDetail.fieldNameFormatted : columnDetail.fieldName];
+            return stockItem[columnDetail.fieldNameFormatted ? columnDetail.fieldNameFormatted : columnDetail.fieldName] 
+                ?? this.getDefaultValue(null, columnDetail);
         }
         else{
             switch(columnDetail.dataType){
@@ -33,8 +34,70 @@ export default class ModalForm extends React.Component {
         }
     }
 
+    getCommitButton(formId) {
+        if (this.props.name === "Upload")
+            return <Button form={formId} name="Upload" isLoading={false} isPrimary={true} type="submit" />
+        else 
+            return <Button onClick={() => this.props.onSubmit(this.props.stockItem?.id)} name="Save" isLoading={false} isPrimary={true} />
+    }
+
+    isMobileScreen(){
+        return window.matchMedia("only screen and (max-width: 760px)").matches;
+    }
+    
+    multiAddDelete(stockItem){
+        let localStockItems = this.props.stockItems;
+        for(let i = 0; i < localStockItems.length; i++){
+            if(localStockItems[i].tempId === stockItem.tempId){
+                localStockItems.splice(i, 1);
+                this.props.setMultiAddStockItems(localStockItems);
+                break;
+            }
+        }
+    }
+
+    getFormBody(formId) {        
+        if (this.props.stockItems){
+            return <>
+                    {this.props.columnDetails.map(columnDetail => 
+                        <label key={"label" + columnDetail.key} htmlFor={columnDetail.key} style={{"width": columnDetail.width + "%", "display": "inline-block" }}>
+                            {columnDetail.caption}
+                        </label>
+                    )}
+                    {this.props.stockItems.map(stockItem => 
+                        <div key={"input" + stockItem.tempId}>
+                            {this.props.columnDetails.map(columnDetail => 
+                                <input key={stockItem.productName + columnDetail.key} type={this.getInputType(columnDetail.dataType)} 
+                                    style={{"width": columnDetail.width + "%", "display": "inline-block" }} className="form-control" 
+                                    id={"input" + stockItem.tempId + columnDetail.key} 
+                                    defaultValue={this.getDefaultValue(stockItem, columnDetail)} name={"input" + columnDetail.key} />
+                            )}
+                            <Button name={this.isMobileScreen() ? "X" : "Delete"} onClick={() => this.multiAddDelete(stockItem)} isDanger={true} />
+                        </div>
+                    )}
+                </>;
+        }
+        else {
+            return this.getFormInnerBody(formId, this.props.stockItem);
+        }
+    }
+
+    getFormInnerBody(formId, stockItem) {
+        return <form id={formId} onSubmit={(e) => this.props.onSubmit(e)} >
+                    {this.props.columnDetails.map(columnDetail => 
+                        <div key={"input" + columnDetail.key} >
+                            <label htmlFor={columnDetail.key}>{columnDetail.caption}</label>
+                            <input type={this.getInputType(columnDetail.dataType)} className="form-control" id={"input" + columnDetail.key} 
+                                    defaultValue={this.getDefaultValue(stockItem, columnDetail)} name={"input" + columnDetail.key} />
+                        </div>
+                    )}
+                </form>
+    }
+
     render() {
         if (this.props.show) {
+            let formId = 'UploadForm';
+
             return  <Modal show={this.props.show} size="lg" aria-labelledby="contained-modal-title-vcenter" centered onHide={() => this.props.onClose()} >
                         <Modal.Header closeButton >
                         <Modal.Title id="contained-modal-title-vcenter">
@@ -42,19 +105,11 @@ export default class ModalForm extends React.Component {
                         </Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
-                            <form>
-                                {this.props.columnDetails.map(columnDetail => 
-                                    <div key={"Input" + columnDetail.key} className="form-group">
-                                        <label htmlFor={columnDetail.key}>{columnDetail.caption}</label>
-                                        <input type={this.getInputType(columnDetail.dataType)} className="form-control" id={"Input" + columnDetail.key} 
-                                                defaultValue={this.getDefaultValue(this.props.stockItem, columnDetail)} />
-                                    </div>
-                                )}
-                            </form>
+                            {this.getFormBody(formId)}
                         </Modal.Body>
                         <Modal.Footer>
-                            <Button onClick={() => this.props.onClose()} name="Close" isLoading={false} isPrimary={false}/>
-                            <Button onClick={() => this.props.onSubmit(this.props.stockItem?.id)} name="Save" isLoading={false} isPrimary={true}/>
+                            <Button onClick={() => this.props.onClose()} name="Close" isLoading={false} isPrimary={false} />
+                            {this.getCommitButton(formId)}
                         </Modal.Footer>
                     </Modal>
         }
@@ -65,10 +120,11 @@ export default class ModalForm extends React.Component {
 }
 
 ModalForm.propTypes = {
-    show: PropTypes.bool.isRequired,
+    show: PropTypes.bool,
     onClose: PropTypes.func.isRequired,
     onSubmit: PropTypes.func.isRequired,
     columnDetails: PropTypes.array.isRequired,
     stockItem: PropTypes.object,
+    stockItems: PropTypes.array,
     name: PropTypes.string.isRequired
 };
