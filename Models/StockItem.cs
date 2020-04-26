@@ -7,6 +7,9 @@ namespace NetCore
     {
         [JsonProperty(PropertyName="id")]
         public string Id { get; set; }
+
+        [JsonProperty(PropertyName="tempId")]
+        public string TempId { get; set; }
         
         [JsonProperty(PropertyName="productName")]
         public string ProductName { get; set; }

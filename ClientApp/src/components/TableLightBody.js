@@ -68,7 +68,7 @@ export default class TableLightBody extends React.Component {
         let elementTouched = touchStartEvent.targetTouches[0];
         
         if (elementTouched.target.id){
-            this.longPressTimeout = setTimeout(() => this.props.columnDetails.find(column => column.isEdit).onClick(stockItem), 1000);
+            this.longPressTimeout = setTimeout(() => this.props.columnDetails.find(column => column.isEdit).onClick(stockItem), 500);
 
             this.setState({
                 swipeTargetRowID: stockItem.id,

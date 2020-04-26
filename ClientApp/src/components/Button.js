@@ -12,7 +12,10 @@ export default class Button extends React.Component {
 
         if (this.props.isSmall) className += " btn-sm";
 
-        return <button type="button" className={className} onClick={this.props.onClick} disabled={this.props.isLoading}>{this.props.name}</button>;
+        if (this.props.type === "submit")
+            return <button form={this.props.form} type="submit" className={className} disabled={this.props.isLoading}>{this.props.name}</button>;
+        else 
+            return <button type={this.props.type ?? "button"} className={className} onClick={this.props.onClick} disabled={this.props.isLoading}>{this.props.name}</button>;
     }
 }
 
@@ -20,7 +23,9 @@ Button.propTypes = {
     name: PropTypes.string.isRequired,
     onClick: PropTypes.func.isRequired,
     isLoading: PropTypes.bool.isRequired,
+    form: PropTypes.string,
     isPrimary: PropTypes.bool,
     isDanger: PropTypes.bool,
-    isSmall: PropTypes.bool
+    isSmall: PropTypes.bool,
+    type: PropTypes.string
 };
