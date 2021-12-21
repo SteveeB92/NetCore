@@ -9,7 +9,6 @@ namespace NetCore
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using Tesseract;
     using System.IO;
 
     [ApiController]
@@ -57,38 +56,6 @@ namespace NetCore
         public IEnumerable<StockItem> UploadReceiptAsync([FromForm] IFormFile input1)
         {
             List<StockItem> stockItems = new List<StockItem>();
-
-            string pathToTesseractTessData = Path.Combine(_webHostEnvironment.ContentRootPath, "tessdata");
-            using (TesseractEngine engine = new TesseractEngine(pathToTesseractTessData, "eng", EngineMode.Default))
-            {
-                using (Pix pix = Pix.LoadFromMemory(GetByteArrayFromStream(input1.OpenReadStream())))
-                {
-                    using (Page page = engine.Process(pix))
-                    {
-                        string meanCofidence = String.Format("{0:P}", page.GetMeanConfidence());
-                        string text = page.GetText();
-
-                        string[] linesOnPage = text.Split("\n");
-
-                        // Between the Marina word and the Total work we have what was actually purchased
-                        for (int i = GetLineWithMarinaText(linesOnPage) + 1; i < GetLineWithTotalText(linesOnPage); i++)
-                        {
-                            string productName = GetProductNameFromLine(linesOnPage[i]);
-
-                            if (!String.IsNullOrWhiteSpace(productName))
-                            {
-                                stockItems.Add(new StockItem()
-                                {
-                                    ProductName = Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(productName.ToLower()),
-                                    PurchasedDT = DateTime.Now,
-                                    Quantity = 1,
-                                    TempId = Guid.NewGuid().ToString()
-                                });
-                            }
-                        }
-                    }
-                }
-            }
 
             return stockItems;
         }
