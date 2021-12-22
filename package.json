@@ -1,0 +1,23 @@
+{
+  "name": "netcore",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SteveeB92/NetCore.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SteveeB92/NetCore/issues"
+  },
+  "homepage": "https://github.com/SteveeB92/NetCore#readme",
+  "dependencies": {
+    "react-router-dom": "^6.2.1",
+    "react-scripts": "^5.0.0"
+  }
+}
