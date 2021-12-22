@@ -1,14 +1,17 @@
 namespace NetCore
 {
+    using ImageMagick;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
+    using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using System.Threading;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.Mvc;
     using System.IO;
 
     [ApiController]
@@ -53,11 +56,77 @@ namespace NetCore
         }
 
         [HttpPost("UploadReceipt")]
-        public IEnumerable<StockItem> UploadReceiptAsync([FromForm] IFormFile input1)
+        public async Task<IEnumerable<StockItem>> UploadReceiptAsync([FromForm] IFormFile input1)
         {
             List<StockItem> stockItems = new List<StockItem>();
 
+            string endpoint = System.Environment.GetEnvironmentVariable("AZURE_COMPUTERVISION_ENDPOINT", EnvironmentVariableTarget.Process);
+            string apiKey = System.Environment.GetEnvironmentVariable("AZURE_COMPUTERVISION_MASTER_KEY", EnvironmentVariableTarget.Process);
+            ComputerVisionClient client = Authenticate(endpoint, apiKey);
+            
+            ReadInStreamHeaders textHeaders;
+
+            using (Stream fileStream = input1.OpenReadStream())
+            using (MagickImage image = new MagickImage(fileStream))
+            {
+                image.Quality = 50;
+
+                using (Stream stream = new MemoryStream())
+                {
+                    image.Write(stream);
+                    stream.Position = 0;
+
+                    try 
+                    {
+                        textHeaders = await client.ReadInStreamAsync(stream);
+                    }
+                    catch (ComputerVisionOcrErrorException e)
+                    {
+                        Console.WriteLine(e.Response.Content);
+                        throw;
+                    }
+                }
+            }
+
+            string operationLocation = textHeaders.OperationLocation;
+
+            const int numberOfCharsInOperationId = 36;
+            string operationId = operationLocation.Substring(operationLocation.Length - numberOfCharsInOperationId);
+
+            ReadOperationResult results;
+            do
+            {
+                results = await client.GetReadResultAsync(Guid.Parse(operationId));
+            }
+            while ((results.Status == OperationStatusCodes.Running || results.Status == OperationStatusCodes.NotStarted));
+
+            IList<ReadResult> textFileResults = results.AnalyzeResult.ReadResults;
+            foreach (ReadResult page in textFileResults)
+            {
+                // Between the Marina word and the Total work we have what was actually purchased
+                for (int i = GetLineWithMarinaText(page.Lines) + 1; i < GetLineWithTotalText(page.Lines); i++)
+                {
+                    string productName = GetProductNameFromLine(page.Lines[i].Text);
+
+                    if (!String.IsNullOrWhiteSpace(productName))
+                    {
+                        stockItems.Add(new StockItem()
+                        {
+                            ProductName = Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(productName.ToLower()),
+                            PurchasedDT = DateTime.Now,
+                            Quantity = 1,
+                            TempId = Guid.NewGuid().ToString()
+                        });
+                    }
+                }
+            }
+            
             return stockItems;
+        }
+
+        public static ComputerVisionClient Authenticate(string endpoint, string key)
+        {
+            return new ComputerVisionClient(new ApiKeyServiceClientCredentials(key)) { Endpoint = endpoint };
         }
 
         private byte[] GetByteArrayFromStream(Stream stream)
@@ -69,24 +138,24 @@ namespace NetCore
             }
         }
 
-        private int GetLineWithMarinaText(string[] linesOnPage)
+        private int GetLineWithMarinaText(IList<Line> linesOnPage)
         {         
+            // Find the line that's most similar to Brighton Marina as our starting point. Marina is a unique word it'll do as our starting point
             Regex regexExpression = new Regex("((m|n)(a|4)r(i|1|l)(n|m)(a|4))", RegexOptions.Compiled | RegexOptions.IgnoreCase);
             return GetLineWithText(linesOnPage, regexExpression) ??  throw new ArgumentException("Unable to find a line with text [Marina]");
         }
 
-        private int GetLineWithTotalText(string[] linesOnPage)
+        private int GetLineWithTotalText(IList<Line> linesOnPage)
         {         
             Regex regexExpression = new Regex("(t(o|0)t(a|4)(l|1|i))", RegexOptions.Compiled | RegexOptions.IgnoreCase);
             return GetLineWithText(linesOnPage, regexExpression) ??  throw new ArgumentException("Unable to find a line with text [Total]");
         }
 
-        private int? GetLineWithText(string[] linesOnPage, Regex regexExpression)
+        private int? GetLineWithText(IList<Line> linesOnPage, Regex regexExpression)
         {            
-            // Find the line that's most similar to Brighton Marina as our starting point. Marina is a unique word it'll do as our starting point
-            for (int i = 0; i < linesOnPage.Length; i++)
+            for (int i = 0; i < linesOnPage.Count; i++)
             {
-                if (regexExpression.IsMatch(linesOnPage[i])) 
+                if (regexExpression.IsMatch(linesOnPage[i].Text)) 
                 {
                     return i;
                 }
